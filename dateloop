@@ -85,7 +85,7 @@ do
     if ! CURRENT="$(date -d "$CURRENT +1 days" "+$FORMAT")"; then
         break
     fi
-    dates=(${dates[@]} "$CURRENT")
+    dates=("${dates[@]}" "$CURRENT")
 done
 
 echo "${dates[@]}"
