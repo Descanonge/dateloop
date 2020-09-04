@@ -25,9 +25,9 @@ EOF
 }
 
 HELP=0
-PLUS=unset
-START=unset
-STOP=unset
+PLUS="unset"
+START="unset"
+STOP="unset"
 FORMAT="%Y%m%d"
 
 if ! PARSED_ARGUMENTS=$(getopt -a -n dateloop -o hp:f: --long help,plus:,format: -- "$@"); then
