@@ -7,14 +7,14 @@ Little script to loop between dates in bash.
 # Usage
 
 ```Usage: dateloop [OPTIONS] START [STOP]
-Return array of date ranging from START to STOP.
+Return array of dates ranging from START to STOP.
 
-Boundaries date are included.
+Boundaries dates are included.
 Max dates looped over is 2000.
 
-  -p, --plus     STOP is redefined as a new date START +PLUS
-                 must consist of a number and a unit
-  -f, --format   Date format. Default to %Y%m%d
+  -p, --plus     STOP is redefined as a new date: START +PLUS
+                 Must consist of a number and a unit
+  -f, --format   Date format. Default to '%Y%m%d'
   -h, --help     Display this help and exit
 ```
 # Examples
