@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+
+# Return arrays of dates between dates
+
+help() {
+    cat <<EOF
+Usage: dateloop [OPTIONS] START [STOP]
+Return array of date ranging from START to STOP.
+
+Boundaries date are included.
+Max dates looped over is 2000.
+
+  -p, --plus     STOP is redefined as a new date START +PLUS
+                 must consist of a number and a unit
+  -f, --format   Date format. Default to %Y%m%d
+  -h, --help     Display this help and exit
+
+Examples:
+  dateloop 20010101 20010105
+  dateloop -p '4 days' 2001-01-01
+  dateloop 20010101 2001-02-03 -f %Y-%m-%d
+
+https://github.com/Descanonge/dateloop
+EOF
+}
+
+HELP=0
+PLUS=unset
+START=unset
+STOP=unset
+FORMAT="%Y%m%d"
+
+if ! PARSED_ARGUMENTS=$(getopt -a -n dateloop -o hp:f: --long help,plus:,format: -- "$@"); then
+    help
+    exit 2
+fi
+
+eval set -- "$PARSED_ARGUMENTS"
+while :
+do
+    case "$1" in
+        -h | --help)  HELP=1       ; shift   ;;
+        -p | --plus)  PLUS="$2"    ; shift 2 ;;
+        -f | --format) FORMAT="$2" ; shift 2 ;;
+        --) shift; break ;;
+        *) echo "Unexpected option: $1"
+           help; exit 2 ;;
+    esac
+done
+
+if [[ "$HELP" == "1" ]]; then
+    help
+    exit 0
+fi
+
+if [[ "$1" == "" ]]; then
+    echo "Need a starting date"
+    help
+    exit 1
+fi
+START="$(date -d "$1" "+$FORMAT")"
+
+if [[ "$PLUS" != "unset" ]]; then
+    STOP="$(date -d "$START +$PLUS" "+$FORMAT")"
+else
+    if [[ "$2" == "" ]]; then
+        echo "Need an ending date, or a plus value"
+        help
+        exit 1
+    fi
+    STOP="$(date -d "$2" "+$FORMAT")"
+fi
+
+if [[ "$START" > "$STOP" ]]; then
+    echo "Ending date ($STOP) is before starting date ($START)"
+    exit 1
+fi
+
+dates=("$START")
+counter=0
+CURRENT="$START"
+while [[ "$CURRENT" != "$STOP" && counter -lt 2000 ]];
+do
+    counter=$((counter + 1))
+    if ! CURRENT="$(date -d "$CURRENT +1 days" "+$FORMAT")"; then
+        break
+    fi
+    dates=(${dates[@]} "$CURRENT")
+done
+
+echo "${dates[@]}"
