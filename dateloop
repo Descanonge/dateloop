@@ -38,7 +38,11 @@ format="%Y%m%d"
 step="1 day"
 delimiter=" "
 
-epoch="1970-01-01 UTC"
+
+function from-epoch {
+    date -u -d "1970-01-01 UTC $1 seconds" "+%F %T"
+}
+
 
 if ! PARSED_ARGUMENTS=$(getopt -a -n dateloop -o hp:f:s:d: \
     --long help,plus:,format:,step:,delimiter: -- "$@"); then
@@ -71,34 +75,40 @@ if [[ "$1" == "" ]]; then
     help
     exit 1
 fi
-start="$(date -d "$1" "+%s")"
+start="$(date -u -d "$1" "+%s")"
 
 if [[ "$plus" != "unset" ]]; then
-    stop="$(date -d "$epoch $start seconds +$plus" "+%s")"
+    stop="$(date -u -d "1970-01-01 $start seconds +$plus" "+%s")"
 else
     if [[ "$2" == "" ]]; then
         echo "Need an ending date, or a plus value"
         help
         exit 1
     fi
-    stop="$(date -d "$2" "+%s")"
+    stop="$(date -u -d "$2" "+%s")"
 fi
 
-if [[ "$start" > "$stop" ]]; then
+if [[ "$start" -gt "$stop" ]]; then
     echo "Ending date ($stop) is before starting date ($start)"
     exit 1
 fi
 
-dates="$(date -d "$epoch $start seconds" "+$format")"
 counter=0
 current="$start"
-while [[ "$current" -lt "$stop" && counter -lt 2000 ]];
+while [[ "$current" -le "$stop" && counter -lt 2000 ]];
 do
+    if [ "$counter" -eq 0 ]; then
+        dates=""
+    else
+        dates="${dates}${delimiter}"
+    fi
+
+    current_d="$(from-epoch "$current") UTC"
+    dates="${dates}$(date -u -d "$current_d" "+$format")"
     counter=$((counter + 1))
-    if ! current="$(date -d "$epoch $current seconds +$step" "+%s")"; then
+    if ! current="$(date -u -d "$current_d +$step" "+%s")"; then
         break
     fi
-    dates="${dates}${delimiter}$(date -d "$epoch $current seconds" "+$format")"
 done
 
 printf "%b" "$dates\n"
