@@ -9,6 +9,7 @@ Return array of dates ranging from START to STOP.
 
 Boundaries dates are included.
 Max dates looped over is 2000.
+Requires GNU date.
 
   -p, --plus     STOP is redefined as a new date: START +PLUS
                  Must consist of a number and a unit
@@ -30,8 +31,12 @@ start="unset"
 stop="unset"
 format="%Y%m%d"
 step="1 day"
+delimiter=" "
 
-if ! PARSED_ARGUMENTS=$(getopt -a -n dateloop -o hp:f: --long help,plus:,format: -- "$@"); then
+epoch="1970-01-01 UTC"
+
+if ! PARSED_ARGUMENTS=$(getopt -a -n dateloop -o hp:f:s:d: \
+    --long help,plus:,format:,step:,delimiter: -- "$@"); then
     help
     exit 2
 fi
@@ -40,10 +45,11 @@ eval set -- "$PARSED_ARGUMENTS"
 while :
 do
     case "$1" in
-        -h | --help)  help=1       ; shift   ;;
-        -p | --plus)  plus="$2"    ; shift 2 ;;
-        -f | --format) format="$2" ; shift 2 ;;
-        -s | --step) step="$2"     ; shift 2 ;;
+        -h | --help)  help=1              ; shift   ;;
+        -p | --plus)  plus="$2"           ; shift 2 ;;
+        -f | --format) format="$2"        ; shift 2 ;;
+        -s | --step) step="$2"            ; shift 2 ;;
+        -d | --delimiter) delimiter="$2"  ; shift 2 ;;
         --) shift; break ;;
         *) echo "Unexpected option: $1"
            help; exit 2 ;;
@@ -60,17 +66,17 @@ if [[ "$1" == "" ]]; then
     help
     exit 1
 fi
-start="$(date -d "$1" "+$format")"
+start="$(date -d "$1" "+%s")"
 
 if [[ "$plus" != "unset" ]]; then
-    stop="$(date -d "$start +$plus" "+$format")"
+    stop="$(date -d "$epoch $start seconds +$plus" "+%s")"
 else
     if [[ "$2" == "" ]]; then
         echo "Need an ending date, or a plus value"
         help
         exit 1
     fi
-    stop="$(date -d "$2" "+$format")"
+    stop="$(date -d "$2" "+%s")"
 fi
 
 if [[ "$start" > "$stop" ]]; then
@@ -78,16 +84,16 @@ if [[ "$start" > "$stop" ]]; then
     exit 1
 fi
 
-dates=("$start")
+dates="$(date -d "$epoch $start seconds" "+$format")"
 counter=0
 current="$start"
-while [[ "$current" != "$stop" && counter -lt 2000 ]];
+while [[ "$current" -lt "$stop" && counter -lt 2000 ]];
 do
     counter=$((counter + 1))
-    if ! current="$(date -d "$current +$step" "+$format")"; then
+    if ! current="$(date -d "$epoch $current seconds +$step" "+%s")"; then
         break
     fi
-    dates=("${dates[@]}" "$current")
+    dates="${dates}${delimiter}$(date -d "$epoch $current seconds" "+$format")"
 done
 
-echo "${dates[@]}"
+printf "%b" "$dates\n"
