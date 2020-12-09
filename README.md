@@ -1,10 +1,10 @@
 
-## DateLoop
+# DateLoop
 
 Little script to loop between dates in bash.
 
 
-# Usage
+## Usage
 
 ```Usage: dateloop [OPTIONS] START [STOP]
 Return array of dates ranging from START to STOP.
@@ -22,7 +22,7 @@ Requires GNU date.
   -h, --help      Display this help and exit
 
 ```
-# Examples
+## Examples
 
 ``` sh
 dateloop 20010101 20010105
@@ -43,6 +43,6 @@ dateloop "20010101 06:00" "20010102" -s '6 hours' \
 ```
 
 
-# Installation
+## Installation
 
 Just link `dateloop` to a location in your path.
