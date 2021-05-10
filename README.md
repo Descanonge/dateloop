@@ -6,7 +6,8 @@ Little script to loop between dates in bash.
 
 ## Usage
 
-```Usage: dateloop [OPTIONS] START [STOP]
+```Usage:
+dateloop [OPTIONS] START [STOP]
 Return array of dates ranging from START to STOP.
 
 Boundaries dates are included.
